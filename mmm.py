@@ -35,6 +35,23 @@ masscan_file = os.path.join(result_dir, f"masscan_{timestamp}.json")
 muki_input_file = os.path.join(result_dir, f"muki_targets_{timestamp}.txt")
 muki_output_file = os.path.join(result_dir, f"muki_results_{timestamp}.xlsx")
 final_output_file = os.path.join(result_dir, f"services_{timestamp}.txt")
+
+# ========== 新增：存活检测端口 ==========
+ALIVE_PORTS = [21, 22, 53, 80, 443, 445, 1433, 3306, 3389, 8080]
+ALIVE_PORTS_STR = ','.join(map(str, ALIVE_PORTS))
+
+RCE_PORTS = [
+    21, 22, 23, 25, 80, 135, 139, 443, 445, 514, 515, 594, 600,
+    1433, 1494, 1521, 2049, 2598, 27017, 3306, 3389, 4786, 4848,
+    4990, 5432, 5555, 5556, 6066, 6379, 6443, 7000, 7001, 7002,
+    7003, 7004, 7070, 7071, 8000, 8001, 8002, 8003, 8009, 8069,
+    8080, 8081, 8083, 8088, 8090, 8093, 8383, 8500, 8686, 8880,
+    8983, 9000, 9001, 9002, 9003, 9012, 9080, 9090, 9200, 9300,
+    9503, 10990, 10999, 11099, 11111, 12721, 12900, 45000, 45001,
+    47001, 47002, 50500, 6000, 6001, 6002, 6003, 6004, 6005, 6006, 6007
+]
+RCE_PORTS = sorted(set(RCE_PORTS))
+RCE_PORTS_STR = ','.join(map(str, RCE_PORTS))
 # ==========================================
 
 total_ports = 0
@@ -44,14 +61,17 @@ nmap_results = []
 def select_ports():
     print("1) 全端口 (1-65535)")
     print("2) 常见 RCE / 高危端口")
+    print("3) 存活检测（21,22,53,80,443,445,1433,3306,3389,8080）")
     while True:
-        choice = input("请选择扫描端口范围 (1/2): ").strip()
+        choice = input("请选择扫描端口范围 (1/2/3): ").strip()
         if choice == '1':
             return '1-65535'
         elif choice == '2':
             return RCE_PORTS_STR
+        elif choice == '3':
+            return ALIVE_PORTS_STR
         else:
-            print("❌ 请输入 1 或 2。")
+            print("❌ 请输入 1、2 或 3。")
 
 
 def select_rate():
@@ -83,20 +103,6 @@ def select_muki_mode():
                     print("  ❌ 请输入 y 或 n。")
         else:
             print("❌ 请输入 y 或 n。")
-
-
-RCE_PORTS = [
-    21, 22, 23, 25, 80, 135, 139, 443, 445, 514, 515, 594, 600,
-    1433, 1494, 1521, 2049, 2598, 27017, 3306, 3389, 4786, 4848,
-    4990, 5432, 5555, 5556, 6066, 6379, 6443, 7000, 7001, 7002,
-    7003, 7004, 7070, 7071, 8000, 8001, 8002, 8003, 8009, 8069,
-    8080, 8081, 8083, 8088, 8090, 8093, 8383, 8500, 8686, 8880,
-    8983, 9000, 9001, 9002, 9003, 9012, 9080, 9090, 9200, 9300,
-    9503, 10990, 10999, 11099, 11111, 12721, 12900, 45000, 45001,
-    47001, 47002, 50500, 6000, 6001, 6002, 6003, 6004, 6005, 6006, 6007
-]
-RCE_PORTS = sorted(set(RCE_PORTS))
-RCE_PORTS_STR = ','.join(map(str, RCE_PORTS))
 
 
 def run_masscan(port_range, rate):
@@ -269,7 +275,7 @@ def main():
     else:
         save_final_results(run_muki_flag=False)
 
-    # ✅ 执行完成后清理临时文件
+    # 清理临时文件
     cleanup_temp_files()
 
 
