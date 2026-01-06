@@ -201,7 +201,7 @@ def save_final_results(run_muki_flag):
 
 
 def main():
-    print("🚀 欢迎使用 mamap - masscan + nmap + muki 自动化工具\n")
+    print("🚀 欢迎使用 mmmm 自动化工具\n")
 
     # ====== 所有交互提前到最开始 ======
     port_range = select_ports()
